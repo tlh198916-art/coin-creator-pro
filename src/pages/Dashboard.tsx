@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ArrowLeft, Check, Copy, ExternalLink, ImagePlus, LogOut, Rocket, Settings2, Waves } from "lucide-react";
+import { Check, Copy, ExternalLink, ImagePlus, LogOut, Rocket, Settings2, Waves } from "lucide-react";
 import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
