@@ -1,55 +1,27 @@
+import { useState } from "react";
+import { ArrowLeft, Check, Copy, ExternalLink, ImagePlus, LogOut, Rocket, Settings2, Waves } from "lucide-react";
+import { useNavigate } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
-import { LayoutDashboard, LogOut } from "lucide-react";
-import { useNavigate } from "react-router";
+
+const wallet = "G5LGodJM2QYhd9YthPvxTgRtkypXS7r722wdF5CQTXJ2";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+  const [tab, setTab] = useState<"launch" | "liquidity" | "settings">("launch");
+  const [image, setImage] = useState<string>();
+  const [launched, setLaunched] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate("/");
+  const copy = async () => {
+    await navigator.clipboard?.writeText(wallet);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 1500);
   };
 
-  return (
-    <main className="min-h-screen bg-background px-6 py-10 text-foreground">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-8">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <p className="text-sm font-medium text-muted-foreground">
-              Authenticated workspace
-            </p>
-            <h1 className="mt-1 text-3xl font-bold tracking-tight">
-              Welcome{user?.name ? `, ${user.name}` : ""}
-            </h1>
-          </div>
-          <Button
-            type="button"
-            variant="outline"
-            className="cursor-pointer gap-2 self-start"
-            onClick={handleSignOut}
-          >
-            <LogOut className="size-4" />
-            Sign out
-          </Button>
-        </header>
-
-        <Card className="border-border/70 shadow-none">
-          <CardHeader>
-            <div className="mb-3 flex size-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <LayoutDashboard className="size-5" />
-            </div>
-            <CardTitle>Your dashboard is ready</CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm leading-6 text-muted-foreground">
-            Replace this starter content with the product&apos;s authenticated
-            experience. The route is protected and sign-in returns here by
-            default.
-          </CardContent>
-        </Card>
-      </div>
-    </main>
-  );
+  return <main className="min-h-screen bg-[#f7f8fa] text-[#12161c]"><header className="border-b border-slate-200/80 bg-white/75"><div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10"><button onClick={() => navigate("/")} className="flex items-center gap-3"><span className="flex size-9 items-center justify-center rounded-xl bg-[#101820] text-[#9ef3d2]"><Rocket className="size-4" /></span><span className="font-semibold tracking-tight">mintlane</span></button><div className="flex items-center gap-4"><span className="hidden text-sm text-slate-500 sm:inline">{user?.name || "Creator workspace"}</span><Button variant="ghost" size="sm" onClick={async () => { await signOut(); navigate("/"); }} className="gap-2 text-slate-500"><LogOut className="size-4" />Sign out</Button></div></div></header><div className="mx-auto flex max-w-7xl flex-col gap-10 px-6 py-10 lg:flex-row lg:px-10"><aside className="w-full shrink-0 lg:w-56"><div className="mb-8"><p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-600">Workspace</p><h1 className="mt-2 text-2xl font-semibold tracking-tight">Ship your token</h1></div><div className="space-y-1">{[["launch", Rocket, "Launch token"], ["liquidity", Waves, "Liquidity pool"], ["settings", Settings2, "Configuration"]].map(([key, Icon, label]) => <button key={key as string} onClick={() => setTab(key as "launch" | "liquidity" | "settings")} className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-sm font-medium transition ${tab === key ? "bg-white text-slate-900 shadow-sm" : "text-slate-500 hover:bg-white/60 hover:text-slate-900"}`}><Icon className="size-4" />{label as string}</button>)}</div><div className="mt-10 rounded-2xl border border-slate-200 bg-white p-4"><p className="text-xs font-semibold text-slate-500">Launch fee</p><p className="mt-2 text-2xl font-semibold">0.05 <span className="text-sm text-slate-400">SOL</span></p><p className="mt-2 text-xs leading-5 text-slate-400">Paid directly to the configured builder wallet.</p></div></aside><section className="min-w-0 flex-1">{tab === "launch" && <Card className="max-w-3xl rounded-3xl border-slate-200/80 bg-white shadow-sm"><CardHeader className="border-b border-slate-100 px-7 py-6"><p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500">Step 1 · Token details</p><CardTitle className="mt-2 text-2xl">Give your token a presence</CardTitle></CardHeader><CardContent className="space-y-6 px-7 py-7"><div className="grid gap-5 sm:grid-cols-2"><label className="text-sm font-medium">Token name<Input className="mt-2 h-11 rounded-xl bg-slate-50" placeholder="Moon Garden" /></label><label className="text-sm font-medium">Ticker symbol<Input className="mt-2 h-11 rounded-xl bg-slate-50 uppercase" placeholder="MOON" maxLength={10} /></label></div><label className="block text-sm font-medium">Description<Textarea className="mt-2 min-h-28 rounded-xl bg-slate-50" placeholder="Tell the world what this token stands for." /></label><label className="flex cursor-pointer items-center gap-4 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-5 transition hover:border-emerald-400"><span className="flex size-12 items-center justify-center rounded-xl bg-white text-slate-400 shadow-sm">{image ? <img src={image} alt="Token preview" className="size-12 rounded-xl object-cover" /> : <ImagePlus className="size-5" />}</span><span><span className="block text-sm font-semibold">{image ? "Artwork selected" : "Upload artwork"}</span><span className="block text-xs text-slate-400">Pinata will store the image and metadata on IPFS.</span></span><input type="file" accept="image/png,image/jpeg,image/webp" className="hidden" onChange={(event) => { const file = event.target.files?.[0]; if (file) setImage(URL.createObjectURL(file)); }} /></label>{launched ? <div className="rounded-2xl border border-emerald-200 bg-emerald-50 p-5"><div className="flex items-center gap-2 font-semibold text-emerald-800"><Check className="size-4" />Launch request ready</div><p className="mt-2 text-sm leading-6 text-emerald-700">Connect a wallet in the production build to sign the fee, IPFS metadata handoff, and mint transaction.</p></div> : <Button onClick={() => setLaunched(true)} className="h-12 w-full rounded-xl bg-[#101820] text-white hover:bg-[#26333d]">Connect wallet & launch <Rocket className="ml-2 size-4" /></Button>}<p className="text-center text-xs text-slate-400">Non-custodial · Your wallet approves every transaction</p></CardContent></Card>}{tab === "liquidity" && <Card className="max-w-3xl rounded-3xl border-slate-200/80 bg-white shadow-sm"><CardHeader className="px-7 py-7"><div className="flex size-11 items-center justify-center rounded-2xl bg-amber-50 text-amber-600"><Waves className="size-5" /></div><CardTitle className="mt-5 text-2xl">Create a Raydium pool</CardTitle><p className="pt-2 text-sm leading-6 text-slate-500">A clear handoff for after your token is minted. Pool creation is kept separate so you stay in control of your liquidity.</p></CardHeader><CardContent className="space-y-3 px-7 pb-7">{["Copy your token mint address from the launch receipt", "Open Raydium’s pool creator and select your token + SOL", "Set your initial price and deposit both assets", "Review the pool, approve transactions, and share the link"].map((item, index) => <div key={item} className="flex items-center gap-4 rounded-2xl bg-slate-50 p-4"><span className="flex size-8 items-center justify-center rounded-full bg-white text-sm font-semibold text-slate-500 shadow-sm">{index + 1}</span><span className="text-sm text-slate-600">{item}</span></div>)}<a href="https://raydium.io" target="_blank" rel="noreferrer" className="mt-5 inline-flex items-center gap-2 text-sm font-semibold text-slate-900 underline decoration-slate-300 underline-offset-8">Open Raydium <ExternalLink className="size-4" /></a></CardContent></Card>}{tab === "settings" && <Card className="max-w-3xl rounded-3xl border-slate-200/80 bg-white shadow-sm"><CardHeader className="px-7 py-7"><p className="text-xs font-bold uppercase tracking-[0.18em] text-indigo-500">Builder controls</p><CardTitle className="mt-2 text-2xl">Configuration</CardTitle></CardHeader><CardContent className="space-y-5 px-7 pb-7"><div className="rounded-2xl bg-slate-50 p-5"><p className="text-xs font-semibold uppercase tracking-[0.15em] text-slate-400">Fee recipient</p><div className="mt-3 flex items-center gap-3"><code className="min-w-0 flex-1 break-all text-xs text-slate-600">{wallet}</code><Button variant="outline" size="icon" onClick={copy} className="shrink-0 rounded-xl">{copied ? <Check className="size-4 text-emerald-500" /> : <Copy className="size-4" />}</Button></div></div><div className="grid gap-4 sm:grid-cols-2"><div className="rounded-2xl border border-slate-200 p-5"><p className="text-xs text-slate-400">RPC provider</p><p className="mt-2 font-semibold">Helius</p><p className="mt-1 text-xs text-slate-500">Set SOLANA_RPC_URL in Render.</p></div><div className="rounded-2xl border border-slate-200 p-5"><p className="text-xs text-slate-400">Metadata storage</p><p className="mt-2 font-semibold">Pinata IPFS</p><p className="mt-1 text-xs text-slate-500">Set PINATA_JWT in Render.</p></div></div><p className="text-xs leading-5 text-slate-400">Never place private keys in frontend environment variables. The creator’s wallet signs token creation in the browser.</p></CardContent></Card>}</section></div></main>;
 }
